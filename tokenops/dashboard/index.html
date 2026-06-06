@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TokenOps Cost Governance Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-base: #f5f7fa;
+            --sidebar-bg: #ffffff;
+            --card-bg: #ffffff;
+            --accent-primary: #0f5a47; /* Donezo Dark Forest Green */
+            --accent-primary-hover: #0a3d30;
+            --accent-secondary: #54bca2; /* Teal Accent */
+            --accent-secondary-light: #e8f5f1;
+            --text-primary: #1e293b; /* Slate 800 */
+            --text-secondary: #64748b; /* Slate 500 */
+            --border-color: #eaecef;
+            --card-shadow: 0 4px 12px rgba(15, 90, 71, 0.02), 0 2px 4px rgba(0, 0, 0, 0.01);
+            --color-danger: #ef4444;
+            --color-warning: #f59e0b;
+            --color-success: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Navigation */
+        aside.sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 2.2rem 1.5rem;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            flex-shrink: 0;
+        }
+
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 2.5rem;
+            padding-left: 0.5rem;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 10px rgba(15, 90, 71, 0.2);
+        }
+
+        .logo-text {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            letter-spacing: -0.02em;
+        }
+
+        .menu-section {
+            margin-bottom: 2.2rem;
+        }
+
+        .menu-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #94a3b8;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding-left: 0.5rem;
+            margin-bottom: 0.8rem;
+            display: block;
+        }
+
+        .menu-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .menu-item a {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.75rem 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .menu-item a svg {
+            width: 20px;
+            height: 20px;
+            stroke-width: 2;
+            transition: stroke 0.2s ease;
+        }
+
+        .menu-item.active a {
+            background-color: var(--accent-secondary-light);
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+
+        .menu-item.active a svg {
+            stroke: var(--accent-primary);
+        }
+
+        .menu-item:not(.active) a:hover {
+            background-color: #f8fafc;
+            color: var(--text-primary);
+        }
+
+        .sidebar-banner {
+            margin-top: auto;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-primary-hover));
+            border-radius: 18px;
+            padding: 1.3rem;
+            color: white;
+            text-align: center;
+            box-shadow: 0 6px 16px rgba(15, 90, 71, 0.15);
+        }
+
+        .sidebar-banner h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-banner p {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .sidebar-banner-btn {
+            display: inline-block;
+            background-color: white;
+            color: var(--accent-primary);
+            border: none;
+            padding: 0.5rem 1.2rem;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: transform 0.2s ease;
+        }
+
+        .sidebar-banner-btn:hover {
+            transform: scale(1.03);
+        }
+
+        /* Main Panel Area */
+        .main-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            height: 100vh;
+        }
+
+        /* Top Header */
+        header.header {
+            height: 75px;
+            background-color: var(--sidebar-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            background-color: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 0.6rem 1rem;
+            width: 350px;
+        }
+
+        .search-bar input {
+            border: none;
+            background: transparent;
+            outline: none;
+            font-family: inherit;
+            font-size: 0.88rem;
+            width: 100%;
+        }
+
+        .search-shortcut {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.1rem 0.4rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .header-icon-btn {
+            background: transparent;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.4rem;
+            border-radius: 10px;
+            transition: background 0.2s ease;
+        }
+
+        .header-icon-btn:hover {
+            background-color: #f1f5f9;
+            color: var(--text-primary);
+        }
+
+        .header-divider {
+            height: 24px;
+            width: 1px;
+            background-color: var(--border-color);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .user-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+            box-shadow: 0 0 0 2px var(--accent-secondary);
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .user-email {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Content Area */
+        main.content {
+            padding: 2rem 2.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            flex: 1;
+        }
+
+        /* Title Area */
+        .title-block {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1.8rem;
+            color: var(--text-primary);
+            margin-bottom: 0.3rem;
+        }
+
+        .subtitle {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        .btn {
+            font-family: inherit;
+            padding: 0.65rem 1.3rem;
+            border-radius: 12px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-primary);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 12px rgba(15, 90, 71, 0.15);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-primary-hover);
+        }
+
+        .btn-secondary {
+            background-color: white;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        /* KPI Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+        }
+
+        .kpi-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 1.5rem;
+            position: relative;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 125px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(15, 90, 71, 0.04);
+        }
+
+        .kpi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .kpi-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .kpi-arrow {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+        }
+
+        .kpi-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.85rem;
+            font-weight: 700;
+            margin: 0.4rem 0 0.6rem 0;
+            letter-spacing: -0.01em;
+        }
+
+        .kpi-badge {
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.25rem 0.6rem;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            width: fit-content;
+        }
+
+        /* Highlighted forest green card */
+        .kpi-card.highlight {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-primary-hover));
+            border: none;
+            color: white;
+        }
+
+        .kpi-card.highlight .kpi-label {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .kpi-card.highlight .kpi-arrow {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .kpi-card.highlight .kpi-badge {
+            background-color: rgba(255, 255, 255, 0.12);
+            color: white;
+        }
+
+        .kpi-card:not(.highlight) .kpi-badge.success {
+            background-color: var(--accent-secondary-light);
+            color: var(--accent-primary);
+        }
+
+        .kpi-card:not(.highlight) .kpi-badge.warn {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: var(--color-warning);
+        }
+
+        .kpi-card:not(.highlight) .kpi-badge.danger {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--color-danger);
+        }
+
+        /* Sub-layout Grids */
+        .dashboard-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        /* Column Panels */
+        .panel {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .panel:hover {
+            box-shadow: 0 8px 24px rgba(15, 90, 71, 0.03);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.2rem;
+        }
+
+        .panel-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .panel-header-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.3rem 0.6rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .panel-header-btn:hover {
+            background-color: #f8fafc;
+            color: var(--text-primary);
+        }
+
+        /* Project Analytics (Chart Box) */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 220px;
+            margin-top: auto;
+        }
+
+        /* Reminder / Alert Card */
+        .alert-card {
+            background-color: #fafbfc;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.2rem;
+            margin-top: auto;
+            margin-bottom: 1.2rem;
+        }
+
+        .alert-heading {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--accent-primary);
+            margin-bottom: 0.4rem;
+        }
+
+        .alert-desc {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .alert-btn {
+            width: 100%;
+            background-color: var(--accent-primary);
+            color: white;
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            transition: background-color 0.2s ease;
+        }
+
+        .alert-btn:hover {
+            background-color: var(--accent-primary-hover);
+        }
+
+        /* Telemetry logs list */
+        .log-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-top: auto;
+        }
+
+        .log-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 0.8rem;
+            background-color: #f8fafc;
+            border: 1px solid #f1f5f9;
+            border-radius: 12px;
+        }
+
+        .log-details {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .log-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .log-icon.openai { background-color: var(--color-success); }
+        .log-icon.anthropic { background-color: #8b5cf6; }
+        .log-icon.gemini { background-color: #06b6d4; }
+        .log-icon.cache { background-color: var(--accent-primary); }
+        .log-icon.default { background-color: #64748b; }
+
+        .log-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .log-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .log-meta {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .log-tokens {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            background-color: white;
+            border: 1px solid var(--border-color);
+            padding: 0.15rem 0.4rem;
+            border-radius: 6px;
+        }
+
+        /* Optimization Audits List */
+        .audit-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-top: auto;
+        }
+
+        .audit-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.7rem 0.9rem;
+            background-color: #f8fafc;
+            border: 1px solid #f1f5f9;
+            border-radius: 14px;
+        }
+
+        .audit-info {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .audit-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--accent-secondary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: var(--accent-primary);
+            border: 1px solid var(--accent-secondary);
+        }
+
+        .audit-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .audit-name {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .audit-desc {
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+        }
+
+        .audit-status {
+            font-size: 0.68rem;
+            font-weight: 600;
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            text-transform: uppercase;
+        }
+
+        .audit-status.critical { background-color: rgba(239, 68, 68, 0.1); color: var(--color-danger); }
+        .audit-status.warning { background-color: rgba(245, 158, 11, 0.1); color: var(--color-warning); }
+        .audit-status.info { background-color: var(--accent-secondary-light); color: var(--accent-primary); }
+
+        /* Semicircular progress gauge */
+        .progress-gauge-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            height: 180px;
+            margin-top: auto;
+        }
+
+        .gauge-canvas-container {
+            width: 170px;
+            height: 100px;
+            position: relative;
+        }
+
+        .gauge-center-text {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+        }
+
+        .gauge-percent {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.55rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .gauge-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .gauge-indicators {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .gauge-ind {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .gauge-ind-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .gauge-ind-dot.completed { background-color: var(--accent-primary); }
+        .gauge-ind-dot.remaining { background-color: #eaecef; }
+
+        /* Time Tracker card (Forest Green textured stopwatch) */
+        .time-tracker-card {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-primary-hover));
+            border-radius: 20px;
+            padding: 1.5rem;
+            color: white;
+            position: relative;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 200px;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 80% 20%, rgba(84, 188, 162, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 10% 80%, rgba(15, 90, 71, 0.5) 0%, transparent 60%);
+        }
+
+        .time-tracker-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .time-tracker-clock {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            text-align: center;
+            margin: 1.5rem 0;
+            letter-spacing: 0.02em;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .time-tracker-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1.2rem;
+        }
+
+        .timer-btn {
+            background-color: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .timer-btn:hover {
+            background-color: white;
+            color: var(--accent-primary);
+            transform: scale(1.05);
+        }
+
+        .timer-btn.stop {
+            background-color: #ef4444;
+            border: none;
+        }
+
+        .timer-btn.stop:hover {
+            background-color: #dc2626;
+            color: white;
+        }
+
+        .timer-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        /* Empty state styling */
+        .empty-state {
+            grid-column: span 3;
+            text-align: center;
+            padding: 5rem 2rem;
+            background-color: white;
+            border: 1px dashed var(--border-color);
+            border-radius: 20px;
+        }
+
+        .empty-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            margin-bottom: 0.8rem;
+            color: var(--accent-primary);
+        }
+
+        .empty-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            max-width: 480px;
+            margin: 0 auto 2rem auto;
+            line-height: 1.6;
+        }
+
+        .empty-code {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: 10px;
+            font-family: monospace;
+            display: inline-block;
+            text-align: left;
+            font-size: 0.82rem;
+            color: var(--accent-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo-group">
+                <div class="logo-icon">Ω</div>
+                <span class="logo-text">TokenOps</span>
+            </div>
+
+            <!-- Menu items -->
+            <div class="menu-section">
+                <span class="menu-label">Menu</span>
+                <ul class="menu-list">
+                    <li class="menu-item active">
+                        <a href="#">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"></rect><rect x="14" y="3" width="7" height="5" rx="1"></rect><rect x="14" y="12" width="7" height="9" rx="1"></rect><rect x="3" y="16" width="7" height="5" rx="1"></rect></svg>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="#">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"></path></svg>
+                            Telemetry logs
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="#">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                            Budgets
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="#">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                            Analytics
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="#">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 00-3-3.87m-4-12a4 4 0 010 7.75"></path></svg>
+                            Team
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- General items -->
+            <div class="menu-section">
+                <span class="menu-label">General</span>
+                <ul class="menu-list">
+                    <li class="menu-item">
+                        <a href="#">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2v.09a1.65 1.65 0 00-1.51 1z"></path></svg>
+                            Settings
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="#">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3m.08 4h.01"></path></svg>
+                            Help & FAQ
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="#">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"></path></svg>
+                            Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Bottom Banner -->
+            <div class="sidebar-banner">
+                <h4>Secure Your LLM Project</h4>
+                <p>Track token burn rates and prevent runaway spending.</p>
+                <a href="https://github.com/mohan/tokenops" target="_blank" class="sidebar-banner-btn">View Docs</a>
+            </div>
+        </aside>
+
+        <!-- Main Panel -->
+        <div class="main-panel">
+            <!-- Header -->
+            <header class="header">
+                <div class="search-bar">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--text-secondary);"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" id="search-input" placeholder="Search usage log...">
+                    <span class="search-shortcut">⌘ F</span>
+                </div>
+
+                <div class="header-actions">
+                    <button class="header-icon-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                    </button>
+                    <button class="header-icon-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                    </button>
+                    <div class="header-divider"></div>
+                    <div class="user-profile">
+                        <img class="user-avatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&q=80" alt="User Avatar">
+                        <div class="user-info">
+                            <span class="user-name">Mohan Kumar</span>
+                            <span class="user-email">mohan@tokenops.io</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main class="content">
+                <!-- Title Block -->
+                <div class="title-block">
+                    <div>
+                        <h1>Dashboard</h1>
+                        <p class="subtitle" id="subtitle-project">Track, optimize, and govern your LLM usage with ease.</p>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-secondary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"></path></svg>
+                            Export Report
+                        </button>
+                        <button class="btn btn-primary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            + Add Budget
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Dashboard Grid -->
+                <div id="dashboard-content" style="display: none; flex-direction: column; gap: 2rem;">
+                    <!-- KPI Cards Grid -->
+                    <div class="kpi-grid">
+                        <!-- Card 1: Total Spend -->
+                        <div class="kpi-card highlight">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Total Spend</span>
+                                <div class="kpi-arrow">↗</div>
+                            </div>
+                            <div class="kpi-value" id="kpi-total-spend">$0.0000</div>
+                            <div class="kpi-badge">Within Budget limits</div>
+                        </div>
+
+                        <!-- Card 2: Daily Usage -->
+                        <div class="kpi-card">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Daily Token Usage</span>
+                                <div class="kpi-arrow">→</div>
+                            </div>
+                            <div class="kpi-value" id="kpi-daily-tokens">0 / 0</div>
+                            <div class="kpi-badge success" id="kpi-daily-percent">0.0% Used</div>
+                        </div>
+
+                        <!-- Card 3: Monthly Usage -->
+                        <div class="kpi-card">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Monthly Token Usage</span>
+                                <div class="kpi-arrow">→</div>
+                            </div>
+                            <div class="kpi-value" id="kpi-monthly-tokens">0 / 0</div>
+                            <div class="kpi-badge success" id="kpi-monthly-percent">0.0% Used</div>
+                        </div>
+
+                        <!-- Card 4: Savings Potential -->
+                        <div class="kpi-card">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Savings Potential</span>
+                                <div class="kpi-arrow">↗</div>
+                            </div>
+                            <div class="kpi-value" id="kpi-savings-pct">0%</div>
+                            <div class="kpi-badge success" id="kpi-savings-count">0 Insights</div>
+                        </div>
+                    </div>
+
+                    <!-- Row 2 -->
+                    <div class="dashboard-row">
+                        <!-- Column 1: Daily Token Analytics (Bar Chart) -->
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h3 class="panel-title">Token Usage Trend (Last 10 Days)</h3>
+                                <button class="panel-header-btn">View All</button>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="trend-chart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Column 2: Reminders -> Budget alerts -->
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h3 class="panel-title">Threshold Alert</h3>
+                                <button class="panel-header-btn">Dismiss</button>
+                            </div>
+                            <div class="alert-card">
+                                <div class="alert-heading" id="alert-heading">No warnings active</div>
+                                <div class="alert-desc" id="alert-desc">All system token metrics are currently within normal thresholds. Keep up the good work!</div>
+                                <button class="alert-btn" id="alert-action-btn">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                    Run Optimize Audit
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Column 3: Active Telemetry Logs -->
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h3 class="panel-title">Active Telemetry Logs</h3>
+                                <button class="panel-header-btn" onclick="refreshData()">Refresh</button>
+                            </div>
+                            <div class="log-list" id="log-list">
+                                <!-- Filled Dynamically -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 3 -->
+                    <div class="dashboard-row">
+                        <!-- Column 1: Optimization Audits -->
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h3 class="panel-title">Optimization Audits</h3>
+                                <button class="panel-header-btn">Auditor</button>
+                            </div>
+                            <div class="audit-list" id="audit-list">
+                                <!-- Filled Dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Column 2: Semicircular Ring Gauge -->
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h3 class="panel-title">Daily Budget Status</h3>
+                                <button class="panel-header-btn">Settings</button>
+                            </div>
+                            <div class="progress-gauge-box">
+                                <div class="gauge-canvas-container">
+                                    <canvas id="gauge-chart"></canvas>
+                                    <div class="gauge-center-text">
+                                        <div class="gauge-percent" id="gauge-percent-text">0%</div>
+                                        <div class="gauge-label">Burned</div>
+                                    </div>
+                                </div>
+                                <div class="gauge-indicators">
+                                    <div class="gauge-ind">
+                                        <span class="gauge-ind-dot completed"></span>
+                                        Used
+                                    </div>
+                                    <div class="gauge-ind">
+                                        <span class="gauge-ind-dot remaining"></span>
+                                        Remaining
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Column 3: Stop Watch Timer -->
+                        <div class="time-tracker-card">
+                            <div class="time-tracker-label">Governance Session</div>
+                            <div class="time-tracker-clock" id="timer-clock">00:00:00</div>
+                            <div class="time-tracker-controls">
+                                <button class="timer-btn" id="play-btn" onclick="toggleTimer()">
+                                    <!-- Pause SVG initially -->
+                                    <svg id="timer-play-svg" style="display:block;" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                                    <svg id="timer-pause-svg" style="display:none;" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                </button>
+                                <button class="timer-btn stop" onclick="resetTimer()">
+                                    <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16"></rect></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div class="empty-state" id="empty-state" style="display: none;">
+                    <div class="empty-title">Welcome to TokenOps</div>
+                    <div class="empty-subtitle">No telemetry logs are available yet. Integrate the GuardedOpenAI client or patch Graphify to start intercepting and auditing your token spending in real-time.</div>
+                    <div class="empty-code">
+                        from tokenops import GuardedOpenAI<br>
+                        client = GuardedOpenAI()<br>
+                        client.chat.completions.create(model="gpt-4o-mini", messages=[...])
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        let trendChart = null;
+        let gaugeChart = null;
+
+        // Session Timer Logic
+        let timerSeconds = 0;
+        let timerInterval = null;
+        let isTimerRunning = false;
+
+        function startTimer() {
+            if (!isTimerRunning) {
+                isTimerRunning = true;
+                timerInterval = setInterval(() => {
+                    timerSeconds++;
+                    updateTimerDisplay();
+                }, 1000);
+            }
+        }
+
+        function toggleTimer() {
+            const playSvg = document.getElementById('timer-play-svg');
+            const pauseSvg = document.getElementById('timer-pause-svg');
+            
+            if (isTimerRunning) {
+                // Pause
+                clearInterval(timerInterval);
+                isTimerRunning = false;
+                playSvg.style.display = 'none';
+                pauseSvg.style.display = 'block';
+            } else {
+                // Resume
+                isTimerRunning = true;
+                timerInterval = setInterval(() => {
+                    timerSeconds++;
+                    updateTimerDisplay();
+                }, 1000);
+                playSvg.style.display = 'block';
+                pauseSvg.style.display = 'none';
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            timerSeconds = 0;
+            updateTimerDisplay();
+            document.getElementById('timer-play-svg').style.display = 'none';
+            document.getElementById('timer-pause-svg').style.display = 'block';
+        }
+
+        function updateTimerDisplay() {
+            const hrs = String(Math.floor(timerSeconds / 3600)).padStart(2, '0');
+            const mins = String(Math.floor((timerSeconds % 3600) / 60)).padStart(2, '0');
+            const secs = String(timerSeconds % 60).padStart(2, '0');
+            document.getElementById('timer-clock').textContent = `${hrs}:${mins}:${secs}`;
+        }
+
+        // Initialize Timer
+        startTimer();
+
+        // Helper classes for log icons
+        function getLogIconClass(provider) {
+            const p = provider.toLowerCase();
+            if (p.includes("cache")) return "cache";
+            if (p.includes("openai")) return "openai";
+            if (p.includes("anthropic") || p.includes("claude")) return "anthropic";
+            if (p.includes("gemini")) return "gemini";
+            return "default";
+        }
+
+        function formatTokens(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
+            if (num >= 1000) return (num / 1000).toFixed(0) + "K";
+            return num;
+        }
+
+        async function refreshData() {
+            try {
+                const response = await fetch("/api/data");
+                const data = await response.json();
+
+                if (!data.recent_calls || data.recent_calls.length === 0) {
+                    document.getElementById("dashboard-content").style.display = "none";
+                    document.getElementById("empty-state").style.display = "block";
+                    return;
+                }
+
+                document.getElementById("dashboard-content").style.display = "flex";
+                document.getElementById("empty-state").style.display = "none";
+
+                // Set Project Details
+                document.getElementById("subtitle-project").textContent = `Tracking token costs for project: ${data.project_name}`;
+
+                // Set KPI values
+                document.getElementById("kpi-total-spend").textContent = `$${data.total_spend.toFixed(4)}`;
+                document.getElementById("kpi-daily-tokens").textContent = `${data.daily.usage.toLocaleString()} / ${formatTokens(data.daily.limit)}`;
+                
+                const dailyPctBadge = document.getElementById("kpi-daily-percent");
+                dailyPctBadge.textContent = `${data.daily.percent}% Used`;
+                dailyPctBadge.className = "kpi-badge " + (data.daily.percent >= 90 ? "danger" : (data.daily.percent >= 80 ? "warn" : "success"));
+
+                document.getElementById("kpi-monthly-tokens").textContent = `${data.monthly.usage.toLocaleString()} / ${formatTokens(data.monthly.limit)}`;
+                const monthlyPctBadge = document.getElementById("kpi-monthly-percent");
+                monthlyPctBadge.textContent = `${data.monthly.percent}% Used`;
+                monthlyPctBadge.className = "kpi-badge " + (data.monthly.percent >= 90 ? "danger" : (data.monthly.percent >= 80 ? "warn" : "success"));
+
+                document.getElementById("kpi-savings-pct").textContent = `${data.optimization.savings_percent}%`;
+                document.getElementById("kpi-savings-count").textContent = `${data.optimization.recommendations.length} Recommendations`;
+
+                // Update Warning Cards / Alert Reminders
+                const alertHeading = document.getElementById("alert-heading");
+                const alertDesc = document.getElementById("alert-desc");
+                const alertActionBtn = document.getElementById("alert-action-btn");
+                
+                if (data.daily.percent >= 100) {
+                    alertHeading.textContent = "Daily Limit Exceeded!";
+                    alertHeading.style.color = "var(--color-danger)";
+                    alertDesc.textContent = "Your daily token spending has completely hit the block threshold limit. Executions are currently throttled.";
+                } else if (data.daily.percent >= 90) {
+                    alertHeading.textContent = "Daily Spend Warning (90%)";
+                    alertHeading.style.color = "var(--color-warning)";
+                    alertDesc.textContent = "Token budgets are approaching exhaustion. Run prompt optimization audits or switch to fallback models to save costs.";
+                } else if (data.optimization.recommendations.length > 0) {
+                    const topRec = data.optimization.recommendations[0];
+                    alertHeading.textContent = "Prompt Warning";
+                    alertHeading.style.color = "var(--accent-primary)";
+                    alertDesc.textContent = `High optimization potential found: ${topRec.category} can save up to ${topRec.potential_savings}% token cost.`;
+                } else {
+                    alertHeading.textContent = "Budgets are On Track";
+                    alertHeading.style.color = "var(--accent-primary)";
+                    alertDesc.textContent = "All token usage metrics are currently within thresholds. Spend burn is safe.";
+                }
+
+                // Render Logs List
+                const logList = document.getElementById("log-list");
+                logList.innerHTML = "";
+                const recentLogs = data.recent_calls.slice(0, 5); // display top 5
+                
+                recentLogs.forEach(call => {
+                    const timeStr = call.timestamp.substring(11, 16);
+                    const logDiv = document.createElement("div");
+                    logDiv.className = "log-item";
+                    
+                    const iconClass = getLogIconClass(call.provider);
+                    const symbol = call.provider.includes("cache") ? "⚡" : call.provider[0].toUpperCase();
+                    
+                    logDiv.innerHTML = `
+                        <div class="log-details">
+                            <div class="log-icon ${iconClass}">${symbol}</div>
+                            <div class="log-text">
+                                <span class="log-title">${call.model}</span>
+                                <span class="log-meta">${call.provider} • ${timeStr}</span>
+                            </div>
+                        </div>
+                        <span class="log-tokens">${call.total_tokens.toLocaleString()}</span>
+                    `;
+                    logList.appendChild(logDiv);
+                });
+
+                // Render Optimization Audits List (Mocked user-aesthetic list of insights)
+                const auditList = document.getElementById("audit-list");
+                auditList.innerHTML = "";
+                
+                const recs = data.optimization.recommendations.slice(0, 4);
+                if (recs.length === 0) {
+                    auditList.innerHTML = `<div style="text-align: center; font-size: 0.82rem; color: var(--text-secondary); padding: 2rem;">No prompt issues detected. Outstanding job!</div>`;
+                } else {
+                    recs.forEach(rec => {
+                        const auditDiv = document.createElement("div");
+                        auditDiv.className = "audit-item";
+                        
+                        let tagClass = "info";
+                        if (rec.potential_savings >= 25) tagClass = "critical";
+                        else if (rec.potential_savings >= 15) tagClass = "warning";
+                        
+                        const initials = rec.category.split(" ").map(w => w[0]).join("");
+                        
+                        auditDiv.innerHTML = `
+                            <div class="audit-info">
+                                <div class="audit-avatar">${initials}</div>
+                                <div class="audit-text">
+                                    <span class="audit-name">${rec.category}</span>
+                                    <span class="audit-desc">Saving potential: ${rec.potential_savings}%</span>
+                                </div>
+                            </div>
+                            <span class="audit-status ${tagClass}">${tagClass === "critical" ? "High" : (tagClass === "warning" ? "Medium" : "Low")}</span>
+                        `;
+                        auditList.appendChild(auditDiv);
+                    });
+                }
+
+                // Render trend bar chart and circular gauge
+                renderCharts(data.charts, data.daily.percent);
+
+            } catch (err) {
+                console.error("Error refreshing dashboard data:", err);
+            }
+        }
+
+        function renderCharts(chartData, dailyPercent) {
+            // Chart.js global styling
+            Chart.defaults.color = '#64748b';
+            Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+
+            // 1. Trend Bar Chart (Daily spend)
+            if (trendChart) {
+                trendChart.data.labels = chartData.daily_trend.labels;
+                trendChart.data.datasets[0].data = chartData.daily_trend.values;
+                trendChart.update();
+            } else {
+                const ctx = document.getElementById('trend-chart').getContext('2d');
+                trendChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: chartData.daily_trend.labels,
+                        datasets: [{
+                            label: 'Tokens Converted',
+                            data: chartData.daily_trend.values,
+                            backgroundColor: '#0f5a47',
+                            borderRadius: 10,
+                            borderWidth: 0,
+                            barThickness: 16
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { display: false } },
+                            y: { grid: { color: '#eaecef' }, ticks: { font: { size: 9 } } }
+                        }
+                    }
+                });
+            }
+
+            // 2. Semicircular Ring Gauge
+            document.getElementById('gauge-percent-text').textContent = `${dailyPercent}%`;
+            
+            const gaugeValue = Math.min(dailyPercent, 100);
+            const remainingValue = 100 - gaugeValue;
+            
+            let color = '#0f5a47'; // forest green
+            if (dailyPercent >= 90) color = '#ef4444'; // danger
+            else if (dailyPercent >= 80) color = '#f59e0b'; // warning
+
+            if (gaugeChart) {
+                gaugeChart.data.datasets[0].data = [gaugeValue, remainingValue];
+                gaugeChart.data.datasets[0].backgroundColor = [color, '#eaecef'];
+                gaugeChart.update();
+            } else {
+                const ctx = document.getElementById('gauge-chart').getContext('2d');
+                gaugeChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        datasets: [{
+                            data: [gaugeValue, remainingValue],
+                            backgroundColor: [color, '#eaecef'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        rotation: 270,
+                        circumference: 180,
+                        cutout: '80%',
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { enabled: false }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Initial fetch
+        refreshData();
+        // Poll every 3 seconds
+        setInterval(refreshData, 3000);
+    </script>
+</body>
+</html>

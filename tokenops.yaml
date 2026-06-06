@@ -1,0 +1,45 @@
+project_name: MyProject
+
+# Global token budgets (in tokens)
+budgets:
+  monthly_tokens: 5000000
+  daily_tokens: 150000
+  per_request: 8192
+
+# Graduated threshold actions (percentages of budget)
+thresholds:
+  warning: 80     # Log warning to stderr
+  optimize: 90    # Log warning + optimization suggestions
+  block: 100      # Block call and raise BudgetExceededError
+
+# Fallback model settings (when monthly or daily budget is hit, or if per_request is exceeded)
+fallback:
+  enabled: true
+  model: gpt-4.1-mini  # Alternative cheaper model
+
+# Active tracking status per provider
+providers:
+  openai: true
+  anthropic: true
+  gemini: false
+  graphify: true   # Enables tracking of Graphify LLM calls
+
+# CI/CD validation parameters
+ci:
+  max_prompt_growth: 20  # Max percentage increase allowed in CI
+
+# Advanced governance configurations
+cache:
+  enabled: true
+  similarity_threshold: 0.85
+
+security:
+  scrub_pii: true
+
+compression:
+  auto_compress: false
+
+team_sync:
+  enabled: false
+  sync_url: "https://telemetry.example.com/api/usage"
+
