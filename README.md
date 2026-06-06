@@ -1,130 +1,316 @@
-# TokenOps
+<p align="center">
+  <img src="https://capsule-render.vercel.app/api?type=blur&height=200&color=gradient&text=TokenOps&fontSize=90&fontAlignY=40&animation=fadeIn" />
+</p>
 
-TokenOps is a developer-first, open-source Python SDK, CLI, and local web dashboard designed to track, optimize, and govern Large Language Model (LLM) token usage and costs. It operates as a local control layer, enabling developers to proactively enforce budget limits, analyze prompt efficiency, and forecast spend with zero external data leakage.
+<p align="center">
+  <img src="https://img.shields.io/badge/Status-Active%20Development-blue" />
+  <img src="https://img.shields.io/badge/Language-Python-3776AB" />
+  <img src="https://img.shields.io/badge/SDK-OpenAI-black" />
+  <img src="https://img.shields.io/badge/Dashboard-Chart.js-FF6384" />
+  <img src="https://img.shields.io/badge/CLI-Terminal-success" />
+  <img src="https://img.shields.io/badge/License-MIT-green" />
+</p>
+
+<p align="center">
+  <img src="https://skillicons.dev/icons?i=python,git,github,vscode" />
+</p>
+
+<h1 align="center">TokenOps</h1>
+
+<p align="center">
+  Developer-first token governance, cost control, and observability for Large Language Models.
+</p>
+
+<p align="center">
+  Monitor usage, enforce budgets, optimize prompts, forecast costs, and govern AI spending entirely on your local machine.
+</p>
+
+<p align="center">
+  <a href="#overview">Overview</a> •
+  <a href="#features">Features</a> •
+  <a href="#architecture">Architecture</a> •
+  <a href="#installation">Installation</a> •
+  <a href="#roadmap">Roadmap</a>
+</p>
 
 ---
 
-## Key Features
+## Overview
 
-- **Local-First Interception**: Intercepts OpenAI calls (`GuardedOpenAI`) and checks budgets before requests reach providers.
-- **Graphify Bridge**: Runtime monkey-patching (`patch_graphify()`) that hooks into Graphify codebase extractions to monitor token consumption in real-time.
-- **Budget Enforcer**: YAML-configured daily, monthly, and per-request limits with warning (80%), optimization (90%), and block (100%) thresholds.
-- **Local Interactive Shell**: A beautiful terminal environment with command prompts (`/report`, `/check`, `/forecast`, `/optimize`, `/patch`, `/run`, `/dashboard`).
-- **Premium Glassmorphic Dashboard**: A sleek dark-mode local web interface with dynamic Chart.js visualizations.
+TokenOps is an open-source Python SDK, CLI, and local dashboard that provides complete visibility and governance over LLM token consumption.
+
+Modern AI applications often suffer from:
+
+* Uncontrolled token growth
+* Unexpected API bills
+* Prompt inefficiencies
+* Missing cost visibility
+* Lack of enforcement controls
+
+TokenOps acts as a local control plane between your application and model providers, allowing teams to proactively monitor, optimize, and enforce token budgets before costs escalate.
+
+All monitoring, analytics, and enforcement operate locally with zero external telemetry requirements.
 
 ---
 
-## Quick Start (Git Clone to Usage)
+## Features
 
-Once you clone the repository, install the package and its requirements:
+### Guarded OpenAI Client
 
-```bash
-# 1. Install dependencies
-pip install pyyaml openai tiktoken --break-system-packages
+Replace standard OpenAI clients with a budget-aware wrapper.
 
-# 2. Install TokenOps locally
-pip install -e . --break-system-packages
-```
+Capabilities include:
 
-### 1. Launch the Interactive Shell
-Simply run `tokenops` in your console (or `python -m tokenops.cli.main` if not installed globally) to launch the interactive terminal environment:
+* Pre-request budget validation
+* Token estimation
+* Cost calculation
+* Usage logging
+* Request blocking
+
+---
+
+### Graphify Runtime Integration
+
+TokenOps includes a runtime monkey-patching bridge that integrates directly with Graphify workloads.
+
+Features:
+
+* Automatic extraction monitoring
+* Real-time token tracking
+* Usage attribution
+* Cost visibility across graph operations
+
+---
+
+### Budget Enforcement Engine
+
+Configure governance policies through a simple YAML file.
+
+Supported controls:
+
+* Daily limits
+* Monthly limits
+* Per-request limits
+* Warning thresholds
+* Automatic blocking
+* Model fallback routing
+
+---
+
+### Interactive Developer Shell
+
+A fully interactive command-line environment designed for token operations management.
+
+Supported Commands:
+
+| Command      | Description                       |
+| ------------ | --------------------------------- |
+| `/report`    | Usage reports and cost breakdowns |
+| `/check`     | Budget validation                 |
+| `/forecast`  | Spend forecasting                 |
+| `/optimize`  | Prompt efficiency analysis        |
+| `/patch`     | Activate Graphify bridge          |
+| `/run`       | Execute guarded requests          |
+| `/dashboard` | Launch web dashboard              |
+| `/help`      | CLI documentation                 |
+| `/exit`      | Exit session                      |
+
+---
+
+### Local Dashboard
+
+A premium dark-mode dashboard built for token observability.
+
+Capabilities:
+
+* Daily usage charts
+* Monthly consumption reports
+* Budget tracking
+* Cost forecasting
+* Prompt efficiency analytics
+* Threshold monitoring
+
+---
+
+## Architecture
 
 ```text
-============================================================
-   _    ___    ____ _   _  _    ____  ____  
-  / \  |_ _|  / ___| | | |/ \  |  _ \|  _ \ 
- / _ \  | |  | |  _| | | / _ \ | |_) | | | |
-/ ___ \ | |  | |_| | |_| / ___ \|  _ <| |_| |
-/_/   \_\___|  \____|\___/_/   \_\_| \_\____/ 
-============================================================
+                    ┌──────────────────┐
+                    │  Developer App   │
+                    └─────────┬────────┘
+                              │
+                              ▼
+                    ┌──────────────────┐
+                    │    TokenOps      │
+                    │ Control Layer    │
+                    └─────────┬────────┘
+                              │
+        ┌─────────────────────┼─────────────────────┐
+        ▼                     ▼                     ▼
 
-Tips for getting started:
-1. Type /help to view all available commands.
-2. Run '/run <prompt>' to test a guarded LLM request.
-3. Enter '/patch' to test the Graphify integration bridge.
+ Budget Engine         Usage Tracker       Graphify Bridge
+        │                     │                     │
+        ▼                     ▼                     ▼
 
-tokenops > 
+ Forecasting         Cost Analytics      Runtime Hooks
+        │                     │
+        └─────────────┬───────┘
+                      ▼
+
+              Local Dashboard
+                      │
+                      ▼
+
+              OpenAI Provider
 ```
-
-### 2. Available Interactive Commands
-Type these commands inside the shell:
-- `/report` - Print a tabular breakdown of input/output tokens and estimated cost.
-- `/check` - Validate daily/monthly budgets with visual progress indicators.
-- `/forecast` - Project month-end spend, burn rates, and exhaustion dates.
-- `/optimize` - Audit recent prompts for redundant statements or context waste.
-- `/patch` - Apply the Graphify monkey-patch and run a simulated extraction.
-- `/run <prompt>` - Send a completion prompt via `GuardedOpenAI` (simulated if no API key set).
-- `/dashboard` - Spin up the premium local web dashboard.
-- `/help` - Show help instructions.
-- `/exit` - Exit the interactive shell.
 
 ---
 
-## SDK & Integration Usage
+## Quick Start
 
-### OpenAI Client Interception
-Replace standard `openai.OpenAI` client instances with `GuardedOpenAI`:
+### Installation
+
+```bash
+pip install pyyaml openai tiktoken
+
+pip install -e .
+```
+
+---
+
+### Launch Interactive Shell
+
+```bash
+tokenops
+```
+
+or
+
+```bash
+python -m tokenops.cli.main
+```
+
+---
+
+## OpenAI Integration
+
+Replace the standard client:
 
 ```python
-import os
 from tokenops import GuardedOpenAI
-
-# Set your API key
-os.environ["OPENAI_API_KEY"] = "your-actual-api-key"
 
 client = GuardedOpenAI()
 
-# Budget is checked before sending, and actual tokens are recorded after response
 response = client.chat.completions.create(
     model="gpt-4o-mini",
-    messages=[{"role": "user", "content": "Explain gravity in one sentence."}]
+    messages=[
+        {
+            "role": "user",
+            "content": "Explain gravity in one sentence."
+        }
+    ]
 )
-print(response.choices[0].message.content)
 ```
 
-### Graphify Monkey-Patching
-Run `patch_graphify()` at the very startup of your application. TokenOps will automatically intercept all Graphify extraction calls:
+Every request automatically receives:
 
-```python
-from tokenops import patch_graphify
-from pathlib import Path
-
-# 1. Activate runtime patch
-patch_graphify()
-
-# 2. Run Graphify extractions normally
-from graphify.llm import extract_files_direct
-
-result = extract_files_direct(
-    files=[Path("my_project/src/main.py")],
-    backend="openai"
-)
-print(f"Extracted {len(result['nodes'])} knowledge graph nodes.")
-```
+* Budget validation
+* Token accounting
+* Cost tracking
+* Usage reporting
 
 ---
 
-## Configuration (`tokenops.yaml`)
+## Graphify Integration
 
-Initialize the default settings file using the shell or CLI (`tokenops init`). Customize limits, fallback models, and provider tracking:
+```python
+from tokenops import patch_graphify
+
+patch_graphify()
+```
+
+All Graphify extraction calls become observable and budget-governed automatically.
+
+---
+
+## Configuration
 
 ```yaml
 project_name: MyLLMApp
 
-# Token limits
 budgets:
   monthly_tokens: 5000000
   daily_tokens: 150000
   per_request: 8192
 
-# Enforcement percentages
 thresholds:
   warning: 80
   optimize: 90
   block: 100
 
-# Rerouting rules
 fallback:
   enabled: true
   model: gpt-4.1-mini
 ```
+
+---
+
+## Technology Stack
+
+| Layer         | Technology                |
+| ------------- | ------------------------- |
+| Language      | Python                    |
+| SDK           | OpenAI                    |
+| Tokenization  | tiktoken                  |
+| Configuration | YAML                      |
+| Dashboard     | Chart.js                  |
+| CLI           | Python Terminal Framework |
+| Analytics     | Local Processing          |
+| Integration   | Graphify Runtime Hooks    |
+
+---
+
+## Use Cases
+
+### AI Startups
+
+Prevent runaway inference costs during rapid experimentation.
+
+### Engineering Teams
+
+Track token consumption across services and environments.
+
+### Enterprises
+
+Enforce governance policies and spending limits.
+
+### Open Source Projects
+
+Gain visibility into model usage without external observability platforms.
+
+---
+
+## Roadmap
+
+* Multi-provider support
+* Anthropic integration
+* Gemini integration
+* Ollama integration
+* Team dashboards
+* Usage alerts
+* Slack notifications
+* Cost anomaly detection
+* OpenTelemetry support
+* Kubernetes deployment mode
+
+---
+
+## License
+
+MIT License
+
+---
+
+<p align="center">
+Built for developers who want visibility, governance, and control over AI spending.
+</p>
