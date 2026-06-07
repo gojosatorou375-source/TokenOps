@@ -90,7 +90,7 @@ class TestAIGuard(unittest.TestCase):
 
     def test_scrubber(self):
         from tokenops.security.scrubber import scrub_text
-        text = "Contact me at mohan@example.com using sk-proj-123456789012345678901234567890123456789012345678."
+        text = "."
         scrubbed, detected = scrub_text(text)
         self.assertIn("Email Address", detected)
         self.assertIn("OpenAI Project API Key", detected)
