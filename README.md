@@ -15,14 +15,7 @@
   <img src="https://skillicons.dev/icons?i=python,git,github,vscode" />
 </p>
 
-<h1 align="center">r"
-████████╗ ██████╗ ██╗  ██╗███████╗███╗   ██╗ ██████╗ ██████╗ ███████╗
-╚══██╔══╝██╔═══██╗██║ ██╔╝██╔════╝████╗  ██║██╔═══██╗██╔══██╗██╔════╝
-   ██║   ██║   ██║█████╔╝ █████╗  ██╔██╗ ██║██║   ██║██████╔╝███████╗
-   ██║   ██║   ██║██╔═██╗ ██╔══╝  ██║╚██╗██║██║   ██║██╔═══╝ ╚════██║
-   ██║   ╚██████╔╝██║  ██╗███████╗██║ ╚████║╚██████╔╝██║     ███████║
-   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝     ╚══════╝
-    "</h1>
+<h1 align="center">TokenOps</h1>
 
 <p align="center">
   Developer-first token governance, cost control, and observability for Large Language Models.
